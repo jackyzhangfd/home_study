@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
@@ -32,14 +33,29 @@ public class Subject {
 
     @Column(insertable = false)
     private Timestamp modifiedAt;
-
+    
+    @Lob
+    @Column(name="detail",columnDefinition = "TEXT")
+    private String detail;
+    
     @Version
     private long version;
 
     public Subject() {
     }
+    
+    
+    public String getDetail() {
+		return detail;
+	}
 
-    public String getTitle() {
+
+	public void setDetail(String detail) {
+		this.detail = detail;
+	}
+
+
+	public String getTitle() {
         return title;
     }
 
@@ -87,7 +103,7 @@ public class Subject {
         return new Timestamp(new Date().getTime());
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
