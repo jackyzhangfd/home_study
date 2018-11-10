@@ -7,6 +7,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponents;
@@ -63,8 +67,8 @@ public class SubjectController {
 	}
 	
 	@PostMapping("/uploadSubjectImage")
-	public ResponseEntity<Subject> addSubjectViaImage(String fileName, MultipartFile imageFile, 
-			UriComponentsBuilder uriComponentsBuilder)throws URISyntaxException{
+	public ResponseEntity<Subject> addSubjectViaImage(@RequestParam("fileName") String fileName, @RequestParam("imageFile") MultipartFile imageFile, 
+			HttpServletResponse response, UriComponentsBuilder uriComponentsBuilder)throws URISyntaxException{
 		
 		if(imageFile == null || imageFile.isEmpty()){
 			throw new BadRequestException("No image is detected");
@@ -95,7 +99,43 @@ public class SubjectController {
 		
 		UriComponents uriComponents = uriComponentsBuilder.path("/api/v1/subject/{id}")
                 .buildAndExpand(sub.getId());
-        return ResponseEntity.created(new URI(uriComponents.getPath())).body(sub);
+        ResponseEntity re = ResponseEntity.created(new URI(uriComponents.getPath())).body(sub);
+        
+        return re;
+	}
+	
+	@PostMapping("/extractTextFromImage")
+	public String extractTextFromImage(@RequestParam("imageFile") MultipartFile imageFile, 
+			HttpServletResponse response, UriComponentsBuilder uriComponentsBuilder)throws URISyntaxException{
+		
+		if(imageFile == null || imageFile.isEmpty()){
+			throw new BadRequestException("No image is detected");
+		}
+		
+		byte[] imageBytes;
+		try {
+			imageBytes = imageFile.getBytes();
+		} catch (IOException e) {
+			throw new BadRequestException("Parse image content fail.");
+		}
+		
+		//extract text from picture
+		BaiduApi baiduApi = SpringContextHolder.getApplicationContext().getBean(BaiduApi.class);
+		JSONObject imageTextJson = baiduApi.extractTextFromPicture(imageBytes);
+		
+		String result = "";
+		if(imageTextJson != null && !imageTextJson.isNull("words_result")){
+			JSONArray wordsArray = imageTextJson.getJSONArray("words_result");
+			for( int i = 0; i < wordsArray.length(); i++){
+				JSONObject word = wordsArray.getJSONObject(i);
+				if(word != null && !word.isNull("words")){
+					result = result + " " + word.getString("words");
+				}
+				
+			}
+		}
+		
+		return result;
 	}
 	
 }
