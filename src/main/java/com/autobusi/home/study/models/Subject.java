@@ -16,6 +16,8 @@ import javax.persistence.Version;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import com.autobusi.home.study.util.SubjectCategory;
+
 @Entity
 @Table(name = "subject")
 public class Subject {
@@ -23,7 +25,10 @@ public class Subject {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
+    
+    @Column(name = "category")
+    private SubjectCategory category; 
+    
     @NotBlank
     @Column(name = "title")
     private String title;
@@ -44,6 +49,14 @@ public class Subject {
     public Subject() {
     }
     
+    
+    public SubjectCategory getCategory(){
+    	return this.category;
+    }
+    
+    public void setCategory(SubjectCategory cate){
+    	this.category = cate;
+    }
     
     public String getDetail() {
 		return detail;

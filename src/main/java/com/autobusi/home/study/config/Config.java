@@ -1,6 +1,9 @@
 package com.autobusi.home.study.config;
 
+import javax.servlet.MultipartConfigElement;
+
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -33,5 +36,12 @@ public class Config {
                 registry.addMapping("/**");
             }
         };
+    }
+	
+	@Bean
+    public MultipartConfigElement multipartConfigElement() {
+        MultipartConfigFactory factory = new MultipartConfigFactory();
+        factory.setMaxFileSize(10 * 1024L * 1024L);
+        return factory.createMultipartConfig();
     }
 }
